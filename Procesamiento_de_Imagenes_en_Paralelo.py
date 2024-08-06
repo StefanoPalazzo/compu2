@@ -10,9 +10,11 @@ from time import perf_counter
 import signal
 import sys
 
+ruta_imagen = "tigre.jpg"
+
 def cargar_imagen(nro_partes):
     global img, altura, ancho, tamano_total, shared_array, lista_bloques
-    img = cv.imread("tigre.jpg")
+    img = cv.imread(ruta_imagen)
     if img is None:
         sys.exit("No se pudo encontrar la imagen.")
 
@@ -181,7 +183,17 @@ def menu_opciones():
     eleccion = int(input("Ingrese el numero del filtro que desea aplicar: "))
     return eleccion
 
-
+def guardar_imagen(imagen_final):
+    guardar = input("Desea guardar la imagen? (s/n): ").lower()
+    while guardar != "s" and guardar != "n":
+        print('Opción inválida, por favor ingrese "s" o "n"')
+        guardar = input("Desea guardar la imagen? (s/n): ").lower()
+    
+    if guardar == "s":
+        cv.imwrite("imagen_final.jpg", imagen_final)
+        print("Imagen guardada con éxito.")
+    else:
+        print("Imagen no guardada.")
 
 
 
@@ -195,6 +207,7 @@ def main():
     aplicar_filtros(filtro_elegido)
     imagen_final = unir_bloques(lista_final, nro_partes)
     mostrar_imagen(imagen_final)
+    guardar_imagen(imagen_final)
 
     
     
