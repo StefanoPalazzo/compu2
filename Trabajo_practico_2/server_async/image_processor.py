@@ -1,24 +1,30 @@
-
+import asyncio
 from PIL import Image
 import io
 from aiohttp import web
+# from server_async.server_async import send_to_scale_server
 
-async def image_to_greyscale(request):
+async def image_to_greyscale(reader, writer):
 
-    data = await request.post()
-    image_file = data['file'] 
-    # Leer los datos de la imagen
-    image_bytes = image_file.file.read()
+    data = await reader.read(1000000)
+    image = Image.open(io.BytesIO(data)).convert("L")
+    
+    output = io.BytesIO()
+    image.save(output, format='JPEG')
+    output.seek(0)
+    
+    scaled_image_data = await send_to_scale_server(output.read())
+    
+    writer.write(scaled_image_data)
+    await writer.drain()
+    writer.close()
 
-    # Abrir la imagen con PIL (Image) para procesarla
-    image = Image.open(io.BytesIO(image_bytes))
-
-    # Convertir la imagen a escala de grises
-    image = image.convert("L")
-
-    # Guardar la imagen procesada en memoria
-    img_byte_arr = io.BytesIO()
-    image.save(img_byte_arr, format='PNG')
-    img_byte_arr.seek(0)
-    # Enviar la imagen procesada al cliente
-    return web.Response(body=img_byte_arr.read(), content_type='image/png')
+async def send_to_scale_server(image_data):
+    reader, writer = await asyncio.open_connection('localhost', 9999)
+    writer.write(image_data)
+    await writer.drain()
+    
+    scaled_image_data = await reader.read(1000000)
+    writer.close()
+    await writer.wait_closed()
+    return scaled_image_data
