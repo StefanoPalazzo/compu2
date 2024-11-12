@@ -28,3 +28,12 @@ async def send_to_scale_server(image_data):
     writer.close()
     await writer.wait_closed()
     return scaled_image_data
+
+def scale_image(data, scale=0.5):
+    image = Image.open(io.BytesIO(data))
+    width, height = image.size
+    scaled_image = image.resize((int(width * scale), int(height * scale)))
+    output = io.BytesIO()
+    scaled_image.save(output, format='JPEG')
+    output.seek(0)
+    return output.read()

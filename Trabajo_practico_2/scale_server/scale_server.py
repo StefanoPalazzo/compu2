@@ -3,19 +3,12 @@ import socketserver
 from PIL import Image
 from io import BytesIO
 from multiprocessing import Process
+from server_async.image_processor import scale_image
 import cgi
 import logging
 import io
 
 
-def scale_image(data, scale_factor=0.5):
-    image = Image.open(io.BytesIO(data))
-    width, height = image.size
-    scaled_image = image.resize((int(width * scale_factor), int(height * scale_factor)))
-    output = io.BytesIO()
-    scaled_image.save(output, format='JPEG')
-    output.seek(0)
-    return output.read()
 
 class ScaleRequestHandler(socketserver.BaseRequestHandler):
     def handle(self):
